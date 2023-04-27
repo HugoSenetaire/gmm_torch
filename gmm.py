@@ -3,7 +3,7 @@ import numpy as np
 
 from math import pi
 from scipy.special import logsumexp
-from utils import calculate_matmul, calculate_matmul_n_times
+from .utils import calculate_matmul, calculate_matmul_n_times
 
 
 class GaussianMixture(torch.nn.Module):
@@ -222,12 +222,12 @@ class GaussianMixture(torch.nn.Module):
         y = torch.cat([torch.full([int(sample)], j, device=counts.device) for j, sample in enumerate(counts)])
 
         # Only iterate over components with non-zero counts
-        for k in np.arange(self.n_components)[counts > 0]: 
+        for k in np.arange(self.n_components)[counts.cpu() > 0]: 
             if self.covariance_type == "diag":
-                x_k = self.mu[0, k] + torch.randn(int(counts[k]), self.n_features, device=x.device) * torch.sqrt(self.var[0, k])
+                x_k = self.mu[0, k] + torch.randn(int(counts[k].cpu()), self.n_features, device=x.device) * torch.sqrt(self.var[0, k])
             elif self.covariance_type == "full":
                 d_k = torch.distributions.multivariate_normal.MultivariateNormal(self.mu[0, k], self.var[0, k])
-                x_k = torch.stack([d_k.sample() for _ in range(int(counts[k]))])
+                x_k = torch.stack([d_k.sample() for _ in range(int(counts[k].cpu()))])
 
             x = torch.cat((x, x_k), dim=0)
 
