@@ -15,7 +15,7 @@ class GaussianMixture(torch.nn.Module):
     probabilities are shaped (n, k, 1) if they relate to an individual sample,
     or (1, k, 1) if they assign membership probabilities to one of the mixture components.
     """
-    def __init__(self, n_components, n_features, covariance_type="full", eps=1.e-6, init_params="kmeans", mu_init=None, var_init=None):
+    def __init__(self, n_components, n_features, covariance_type="full", eps=1.e-6, init_parameters="kmeans", mu_init=None, var_init=None):
         """
         Initializes the model and brings all tensors into their required shape.
         The class expects data to be fed as a flat tensor in (n, d).
@@ -26,7 +26,7 @@ class GaussianMixture(torch.nn.Module):
             pi:              torch.Tensor (1, k, 1)
             covariance_type: str
             eps:             float
-            init_params:     str
+            init_parameters:     str
             log_likelihood:  float
             n_components:    int
             n_features:      int
@@ -38,7 +38,7 @@ class GaussianMixture(torch.nn.Module):
             var_init:        torch.Tensor (1, k, d) or (1, k, d, d)
             covariance_type: str
             eps:             float
-            init_params:     str
+            init_parameters:     str
         """
         super(GaussianMixture, self).__init__()
 
@@ -52,15 +52,15 @@ class GaussianMixture(torch.nn.Module):
         self.log_likelihood = -np.inf
 
         self.covariance_type = covariance_type
-        self.init_params = init_params
+        self.init_parameters = init_parameters
 
         assert self.covariance_type in ["full", "diag"]
-        assert self.init_params in ["kmeans", "random"]
+        assert self.init_parameters in ["kmeans", "random"]
 
-        self._init_params()
+        self._init_parameters()
 
 
-    def _init_params(self):
+    def _init_parameters(self):
         if self.mu_init is not None:
             assert self.mu_init.size() == (1, self.n_components, self.n_features), "Input mu_init does not have required tensor dimensions (1, %i, %i)" % (self.n_components, self.n_features)
             # (1, k, d)
@@ -88,7 +88,7 @@ class GaussianMixture(torch.nn.Module):
 
         # (1, k, 1)
         self.pi = torch.nn.Parameter(torch.Tensor(1, self.n_components, 1), requires_grad=False).fill_(1. / self.n_components)
-        self.params_fitted = False
+        self.parameters_fitted = False
 
 
     def check_size(self, x):
@@ -111,9 +111,9 @@ class GaussianMixture(torch.nn.Module):
         n = x.shape[0]
 
         # Free parameters for covariance, means and mixture components
-        free_params = self.n_features * self.n_components + self.n_features + self.n_components - 1
+        free_parameters = self.n_features * self.n_components + self.n_features + self.n_components - 1
 
-        bic = -2. * self.__score(x, as_average=False).mean() * n + free_params * np.log(n)
+        bic = -2. * self.__score(x, as_average=False).mean() * n + free_parameters * np.log(n)
 
         return bic
 
@@ -128,12 +128,12 @@ class GaussianMixture(torch.nn.Module):
             n_iter:     int
             warm_start: bool
         """
-        if not warm_start and self.params_fitted:
-            self._init_params()
+        if not warm_start and self.parameters_fitted:
+            self._init_parameters()
 
         x = self.check_size(x)
 
-        if self.init_params == "kmeans" and self.mu_init is None:
+        if self.init_parameters == "kmeans" and self.mu_init is None:
             mu = self.get_kmeans_mu(x, n_centers=self.n_components)
             self.mu.data = mu
 
@@ -160,7 +160,7 @@ class GaussianMixture(torch.nn.Module):
                     eps=self.eps)
                 for p in self.parameters():
                     p.data = p.data.to(device)
-                if self.init_params == "kmeans":
+                if self.init_parameters == "kmeans":
                     self.mu.data, = self.get_kmeans_mu(x, n_centers=self.n_components)
 
             i += 1
@@ -171,7 +171,7 @@ class GaussianMixture(torch.nn.Module):
                 self.__update_mu(mu_old)
                 self.__update_var(var_old)
 
-        self.params_fitted = True
+        self.parameters_fitted = True
 
 
     def predict(self, x, probs=False):

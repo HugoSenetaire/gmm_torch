@@ -58,7 +58,7 @@ class CpuCheck(unittest.TestCase):
         model = GaussianMixture(n_components, d, mu_init=mu_init, var_init=var_init, covariance_type="diag")
         model_sk = sklearn.mixture.GaussianMixture(n_components,
             covariance_type="diag",
-            init_params="random",
+            init_parameters="random",
             means_init=np.squeeze(model.mu.data.numpy()),
             precisions_init=np.squeeze(1. / np.sqrt(var_init.data.numpy())),
             weights_init=np.squeeze(model.pi.data.numpy()))
@@ -123,10 +123,10 @@ class CpuCheck(unittest.TestCase):
 
         var_init = torch.eye(d,dtype=torch.float64).reshape(1, 1, d, d).repeat(1,n_components,1, 1)
 
-        model = GaussianMixture(n_components, d, init_params="random", var_init=var_init, covariance_type="full")
+        model = GaussianMixture(n_components, d, init_parameters="random", var_init=var_init, covariance_type="full")
         model_sk = sklearn.mixture.GaussianMixture(n_components,
             covariance_type="full",
-            init_params="random",
+            init_parameters="random",
             means_init=np.squeeze(model.mu.data.numpy()),
             precisions_init=np.squeeze(np.linalg.inv(var_init)))
 
