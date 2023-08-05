@@ -1,8 +1,9 @@
-import torch
-import numpy as np
-
 from math import pi
+
+import numpy as np
+import torch
 from scipy.special import logsumexp
+
 from .utils import calculate_matmul, calculate_matmul_n_times
 
 
